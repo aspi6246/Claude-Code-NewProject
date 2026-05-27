@@ -1,21 +1,36 @@
 # Setting up a new research project
 
-This repo provides two things:
+This repo provides a complete scaffolding for empirical research projects optimized for Claude Code workflows:
 
-1. **A `CLAUDE.md`** — a template for permanent instructions that Claude reads at the start of every session. It defines ground rules (don't touch raw data, don't delete files, always ask before acting), code conventions, and a progress log system that carries context across sessions.
+1. **A `CLAUDE.md`** — permanent instructions that Claude reads at the start of every session. Defines ground rules, session protocol, and working relationship.
 
-2. **A project setup script** — available in both PowerShell (Windows) and Bash (Mac/Linux). It creates a standardised directory structure, copies in the template files, and gives you a clean starting point.
+2. **Path-scoped rules** (`.claude/rules/`) — context-aware rules that load automatically. R conventions only load when working on R files; LaTeX rules only load when editing the paper.
+
+3. **A script-registry skill** — tracks which R Markdown scripts produce which outputs via YAML front-matter. Auto-generates dependency graphs and detects drift between declared and actual I/O.
+
+4. **Memory and task tracking** — `MEMORY.md` indexes cross-session context (methodology decisions, data quirks); `PINBOARD.md` tracks tasks and ideas.
+
+5. **A project setup script** — available in both PowerShell (Windows) and Bash (Mac/Linux). Creates the standardised directory structure, copies in all template files, and gives you a clean starting point.
 
 ## What's in This Repo
 
 ```
-├── README                     # This file
-├── setup_project.ps1          # Setup script for Windows (PowerShell)
-├── setup_project.sh           # Setup script for Mac/Linux (Bash)
-├── PowerShell_Setup_Guide.md  # Detailed step-by-step Windows walkthrough
+├── README                          # This file
+├── setup_project.ps1               # Setup script for Windows (PowerShell)
+├── setup_project.sh                # Setup script for Mac/Linux (Bash)
+├── PowerShell_Setup_Guide.md       # Detailed step-by-step Windows walkthrough
 └── templates/
-    ├── CLAUDE.md                   # Template: Claude Code session instructions
-    └── gitignore_template          # Template: .gitignore for R research projects
+    ├── CLAUDE.md                   # Session instructions (ground rules + protocol)
+    ├── MEMORY.md                   # Cross-session memory index
+    ├── PINBOARD.md                 # Task tracking board
+    ├── gitignore_template          # .gitignore for R + LaTeX projects
+    ├── settings_local.json         # Baseline Claude Code permissions (R + Git)
+    ├── build_registry.R            # Script registry builder (R)
+    ├── REGISTRY_header.md          # Empty registry placeholder
+    └── rules/
+        ├── r-data-analysis.md      # R coding conventions (loads for Code/**, Data/**)
+        ├── paper-editing.md        # LaTeX conventions (loads for Paper/**)
+        └── output-conventions.md   # Output formats (loads for Output/**)
 ```
 
 
@@ -32,12 +47,12 @@ This repo provides two things:
 
 **PowerShell (Windows):**
 ```powershell
-git clone https://github.com/aspi6246/2026-Claude-Code-NewProject.git "$HOME\Templates\claude-tools"
+git clone https://github.com/aspi6246/Claude-Code-NewProject.git "$HOME\Templates\claude-tools"
 ```
 
 **Bash (Mac/Linux):**
 ```bash
-git clone https://github.com/aspi6246/2026-Claude-Code-NewProject.git ~/Templates/claude-tools
+git clone https://github.com/aspi6246/Claude-Code-NewProject.git ~/Templates/claude-tools
 ```
 
 ### 3. (Windows only) Allow PowerShell to run scripts
@@ -62,11 +77,11 @@ Type `Y` when prompted.
 bash ~/Templates/claude-tools/setup_project.sh My-New-Paper ~/Dropbox/Research
 ```
 
-This creates the full project directory structure, copies in the CLAUDE.md template and .gitignore, creates a starter README.md, and adds .gitkeep files so Git preserves empty directories.
+This creates the full project directory structure with all configuration files.
 
 ### 5. Fill in the placeholders
 
-Open `CLAUDE.md` in the new project folder (RStudio, VS Code, or any text editor) and replace every `XXXX`, `AUTHOR_NAME`, and `INSERT` with the real project details. Do the same for `README.md`. Or have Claude Code do this in a new session.
+Open `CLAUDE.md` in the new project folder and replace every `XXXX`, `AUTHOR_NAME`, and `INSERT` with the real project details. Do the same for `README.md`. Or have Claude Code do this in a new session.
 
 Claude reads your CLAUDE.md automatically. You're working.
 
@@ -80,11 +95,20 @@ Every project created by the setup script has this layout:
 My-New-Paper/
 ├── CLAUDE.md                  # Instructions for Claude (read every session)
 ├── README.md                  # Project overview for humans
+├── MEMORY.md                  # Cross-session memory index
+├── PINBOARD.md                # Task and idea tracking board
 ├── .gitignore                 # Keeps build artifacts and large files out of Git
+├── .claude/
+│   ├── rules/                 # Path-scoped rules (auto-loaded by context)
+│   │   ├── r-data-analysis.md # R conventions (loads for *.R, *.Rmd, Code/**, Data/**)
+│   │   ├── paper-editing.md   # LaTeX conventions (loads for *.tex, *.bib, Paper/**)
+│   │   └── output-conventions.md # Output formats (loads for Output/**)
+│   └── settings.local.json    # Baseline permissions for R + Git commands
 ├── Code/
+│   ├── REGISTRY.md            # Auto-generated script dependency map
 │   ├── _Archive/              # Superseded scripts (never deleted, moved here)
 │   ├── _Claude Logs/          # Session progress logs (key for continuity)
-│   └── _Claude Scripts/       # Purled .R copies of Claude's .Rmd scripts
+│   └── _Claude Scripts/       # Purled .R copies + build_registry.R
 │       └── _Archive/
 ├── Data/
 │   ├── Raw/                   # Original source data (permanently read-only)
@@ -93,8 +117,9 @@ My-New-Paper/
 ├── Output/
 │   ├── Tables/                # LaTeX tables, CSVs
 │   │   └── _Archive/
-│   └── Figures/               # PDFs, PNGs
-│       └── _Archive/
+│   ├── Figures/               # PDFs, PNGs
+│   │   └── _Archive/
+│   └── Processed Data/        # Intermediate data (script-to-script)
 ├── Literature/                # Reference papers and data documentation
 ├── Paper/                     # LaTeX paper and .bib files
 └── Admin/                     # Notes, ideas, miscellaneous
@@ -104,34 +129,45 @@ My-New-Paper/
 
 **`_Archive/` subfolders instead of deletion.** Nothing is ever deleted. When a script, dataset, or output is superseded, it gets moved to the `_Archive/` folder within the same directory. You can always recover old work.
 
-**`_Claude Logs/` for session continuity.** At the end of each Claude Code session, Claude writes a progress log documenting what was done, what decisions were made, and what's still pending. The next session reads these logs first, so context carries over even though Claude's memory doesn't.
+**Path-scoped rules instead of monolithic config.** Instead of loading all conventions for every interaction, rules are split by context. R coding rules only load when you're working on R files; LaTeX rules only load when editing the paper. This keeps Claude's context window lean.
+
+**Script registry for dependency tracking.** Each paper-producing `Code/*.Rmd` carries a `registry:` YAML block listing its inputs and outputs. The `build_registry.R` script auto-generates a dependency graph and flags drift between declared and actual I/O. The `script-registry` skill definition lives in the global skills repo ([Claude-Code-Skills-for-Academics](https://github.com/aspi6246/Claude-Code-Skills-for-Academics)); only the builder script is project-local.
+
+**Memory system for cross-session context.** `MEMORY.md` indexes persistent memories (methodology decisions, data quirks, co-author preferences) that carry between Claude Code sessions. Session logs document _what happened_; memory captures _what matters going forward_.
+
+**`_Claude Logs/` for session continuity.** At the end of each Claude Code session, Claude writes a progress log documenting what was done, what decisions were made, and what's still pending. The next session reads these logs first, so context carries over.
 
 **`Data/Raw/` is read-only by convention.** Original data is never modified. All transformations happen in code and write to `Data/Processed/`. This keeps the pipeline reproducible.
 
 **Numbered scripts for pipeline order.** Scripts in `Code/` are prefixed `01_`, `02_`, etc. to indicate execution order. This makes the dependency chain explicit.
 
-## How the CLAUDE.md Template Works
+**`PINBOARD.md` for task tracking.** Quick notes, ideas, and to-do items that persist across sessions. Claude can read and update this via the `/pinboard` command.
+
+## How the CLAUDE.md Works
 
 Claude Code automatically reads any `CLAUDE.md` file in the project root at the start of a session. The template includes:
 
-- **Session startup checklist** — tells Claude to read progress logs before doing anything
+- **Session protocol** — spin-up/wrap-up workflow, PINBOARD triage
 - **Ground rules** — don't delete files, don't touch raw data, always confirm before acting
 - **Working relationship** — defines Claude as a thinking partner who should push back and critique
-- **Code conventions** — R, data.table, fixest, arrow; naming conventions; pipeline structure
-- **Output conventions** — where tables, figures, and scripts go
-- **Progress log protocol** — how to write and name session logs
+- **Memory prompt** — save methodology decisions for future sessions
+- **Script registry reference** — link to the registry system
 
-You customise this for each project by filling in the placeholder text (`XXXX`, `AUTHOR_NAME`).
+The path-scoped rules in `.claude/rules/` add context-specific detail:
+
+- **r-data-analysis.md** — R coding conventions, library stack, data handling, registry YAML
+- **paper-editing.md** — LaTeX conventions, Git/Overleaf workflow
+- **output-conventions.md** — table/figure formats, destination rules
+
+You customise these for each project by filling in the placeholder text (`XXXX`, `AUTHOR_NAME`).
 
 ## Requirements
 
 - Git
 - Claude Code
-- **Windows:** PowerShell 
-- **Mac/Linux:** Bash 
+- **Windows:** PowerShell
+- **Mac/Linux:** Bash
 
 ## Detailed Windows Walkthrough
 
 If you're new to Git and the command line, see `PowerShell_Setup_Guide.md` for a step-by-step guide covering everything from installing Git to creating your first project.
-
-

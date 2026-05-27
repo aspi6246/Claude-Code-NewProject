@@ -6,14 +6,11 @@ This is the running instruction file for Claude when working on the `XXXX` proje
 
 ---
 
-## Session Startup Checklist
+## Session Protocol
 
-At the start of every new session, Claude must:
-
-1. Read this file (`CLAUDE.md`).
-2. Read `README.md` for project-specific context.
-3. Read the most recent progress log(s) in `Code/_Claude Logs/` to understand what was accomplished in prior sessions.
-4. Confirm with AUTHOR_NAME that Claude is up to speed before starting new work.
+- **Start of session:** Use `/spin-up` or manually: read CLAUDE.md, README.md, most recent progress log in `Code/_Claude Logs/`, and PINBOARD.md. Confirm with AUTHOR_NAME that Claude is up to speed before starting new work.
+- **End of session:** Use `/wrap-up` to capture all work before context is lost.
+- **If PINBOARD.md has 10+ open items:** Flag items older than 30 days and ask AUTHOR_NAME whether to keep, archive, or remove them before starting new work.
 
 ---
 
@@ -48,64 +45,9 @@ Claude's role is as a **thinking partner**. The goal is to publish this paper in
 
 ---
 
-## Code Conventions
+## Memory
 
-### Language and Style
-
-- All code is written in **R**, primarily using **R Markdown (`.Rmd`)** files.
-- Key libraries: `fixest`, `arrow`, `dplyr`. Prefer these over alternatives (e.g., prefer `dplyr` over `data.table` for data manipulation (unless data size calls for data.table), `fixest` over `lm`/`felm` for regressions).
-- Use `arrow::read_parquet()` or `arrow::open_dataset()` for large datasets. Avoid reading entire large files into memory when a filtered query will do.
-- Comment code clearly. Each code chunk in an `.Rmd` should have a brief comment explaining what it does and why.
-
-### File Naming and Locations
-
-- **Canonical scripts** live in `Code/` and are named with a numbered prefix indicating pipeline order: `01_clean_data.Rmd`, `02_summary_stats.Rmd`, `03_main_estimation.Rmd`, etc.
-- **Claude-created scripts** also live in `Code/` and are named `Claude_XXXX.Rmd` (e.g., `Claude_summary_stats.Rmd`).
-- **Purled `.R` copies** of Claude scripts go in `Code/_Claude Scripts/`. These are working copies for non-interactive execution; the `.Rmd` in `Code/` is always the canonical source.
-- **Superseded scripts** (Claude's or otherwise) get moved to the relevant `_Archive/` subfolder, never deleted.
-
-### Pipeline Order
-
-Scripts are numbered to indicate execution order. The pipeline runs as:
-
-```
-01_XXXX.Rmd  →  reads Raw data, writes to Data/Processed/
-02_XXXX.Rmd  →  reads Processed data, produces summary stats
-03_XXXX.Rmd  →  main estimation
-...
-```
-
-If Claude creates a new script, AUTHOR_NAME will assign its number and position in the pipeline. Claude should ask where it fits rather than assuming.
-
----
-
-## Output Conventions
-
-| Output type       | Location                    | Format               |
-|--------------------|-----------------------------|----------------------|
-| Tables             | `Output/Tables/`            | LaTeX (`.tex`), CSV  |
-| Figures            | `Output/Figures/`           | PDF preferred, PNG   |
-| Scripts            | `Code/`                     | `Claude_XXXX.Rmd`    |
-| Purled scripts     | `Code/_Claude Scripts/`     | `Claude_XXXX.R`      |
-| Session logs       | `Code/_Claude Logs/`        | Markdown (`.md`)     |
-
----
-
-## Data Handling
-
-- **`Data/Raw/`** is read-only. Original source data lives here and is never modified.
-- **`Data/Processed/`** holds all transformed, merged, or constructed datasets. Scripts in `Code/` take raw data and produce processed data.
-- When working with large Parquet files, prefer `arrow::open_dataset()` with filtered queries over loading entire datasets into memory.
-- Always document in the script header which raw files are read and which processed files are produced.
-
----
-
-## Paper Conventions
-
-- The paper is written in **LaTeX** and lives in `Paper/`.
-- If Claude edits LaTeX, keep changes minimal and localised. Flag what was changed so AUTHOR_NAME can review.
-- BibTeX references go in the existing `.bib` file. Do not create a new one.
-- Do not reformat or restructure sections without asking.
+If a methodology decision, data quirk, or co-author preference comes up during a session, **save it to memory** so future sessions can start with that context. See `MEMORY.md` for the index.
 
 ---
 
@@ -114,12 +56,33 @@ If Claude creates a new script, AUTHOR_NAME will assign its number and position 
 - **Location**: `Code/_Claude Logs/`
 - **Purpose**: Maintain continuity across sessions. These logs are the primary mechanism for a new session to understand what has already been done.
 - **Naming**: `YYYY-MM-DD_Session01_Progress.md` (increment session number within the same day)
-- **Workflow**: At the end of each session (or when context is getting full), create/update the progress log with:
-  - What was accomplished
-  - What decisions were made and why
-  - What is still pending or unresolved
-  - Any open questions for AUTHOR_NAME
+- **Content**: What was accomplished, what decisions were made and why, what is still pending, any open questions for AUTHOR_NAME.
 - **Read these first** when starting a new session.
+
+---
+
+## Script Registry
+
+This project uses the **script-registry** system to track which R Markdown scripts produce which outputs. The `/script-registry` skill loads globally from `~/.claude/skills/`.
+
+- **Single source of truth:** the `registry:` YAML block inside each `Code/*.Rmd` script.
+- **Human-readable view:** `Code/REGISTRY.md`, auto-generated by `Code/_Claude Scripts/build_registry.R`.
+- **Before creating a new `Code/*.Rmd`:** read `Code/REGISTRY.md` first and surface existing matches before starting fresh.
+- **After any YAML change:** run `Rscript "Code/_Claude Scripts/build_registry.R"` to refresh `Code/REGISTRY.md`.
+
+---
+
+## Documentation (Rules Files)
+
+Detailed conventions are organized into path-scoped rules files that load automatically based on context:
+
+| File | Scope | Contents |
+|------|-------|----------|
+| `.claude/rules/r-data-analysis.md` | Loads for `*.R`, `*.Rmd`, `Code/**`, `Data/**` | Code conventions, library stack, data handling |
+| `.claude/rules/paper-editing.md` | Loads for `*.tex`, `*.bib`, `Paper/**` | LaTeX conventions, BibTeX rules |
+| `.claude/rules/output-conventions.md` | Loads for `Output/**` | Table/figure formats, naming, output destinations |
+
+These are path-scoped so that R methodology only loads when working on R files, and paper rules only load when editing LaTeX.
 
 ---
 
@@ -134,4 +97,3 @@ If Claude creates a new script, AUTHOR_NAME will assign its number and position 
 - **Paper**: LaTeX in `Paper/XXXX`
 - **Key libraries**: fixest, arrow, dplyr
 - **Full directory documentation**: See `README.md`
-
