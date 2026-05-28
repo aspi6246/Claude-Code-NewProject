@@ -115,6 +115,11 @@ if [ "$HAS_TEMPLATES" = true ]; then
         echo "  Copied PINBOARD.md (task tracking board)"
     fi
 
+    if [ -f "$TEMPLATE_DIR/GLOSSARY.md" ]; then
+        cp "$TEMPLATE_DIR/GLOSSARY.md" "$PROJECT_PATH/GLOSSARY.md"
+        echo "  Copied GLOSSARY.md (per-project glossary; loaded at session start)"
+    fi
+
     # Path-scoped rules
     if [ -d "$TEMPLATE_DIR/rules" ]; then
         cp "$TEMPLATE_DIR/rules/"* "$PROJECT_PATH/.claude/rules/"
@@ -170,6 +175,7 @@ XXXX
 ├── README.md                  # This file — project overview
 ├── MEMORY.md                  # Cross-session memory index
 ├── PINBOARD.md                # Task tracking board
+├── GLOSSARY.md                # Definitions, abbreviations, command-phrases
 ├── .claude/
 │   ├── rules/                 # Path-scoped rules (auto-loaded by context)
 │   │   ├── r-data-analysis.md # R coding conventions (Code/**, Data/**)
@@ -267,6 +273,7 @@ echo "  - CLAUDE.md          Ground rules + session protocol"
 echo "  - README.md          Project overview"
 echo "  - MEMORY.md          Cross-session memory index"
 echo "  - PINBOARD.md        Task tracking board"
+echo "  - GLOSSARY.md        Glossary (terms + command-phrases)"
 echo "  - .claude/rules/     Path-scoped rules (R, LaTeX, Output)"
 echo "  - build_registry.R   Script dependency tracker (Code/_Claude Scripts/)"
 echo "  - .claude/settings   Baseline permissions for R + Git"

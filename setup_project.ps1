@@ -105,6 +105,12 @@ if ($HasTemplates) {
         Write-Host "  Copied PINBOARD.md (task tracking board)"
     }
 
+    $GlossaryTemplate = Join-Path $TemplateDir "GLOSSARY.md"
+    if (Test-Path $GlossaryTemplate) {
+        Copy-Item $GlossaryTemplate -Destination "$ProjectPath\GLOSSARY.md"
+        Write-Host "  Copied GLOSSARY.md (per-project glossary; loaded at session start)"
+    }
+
     # Path-scoped rules
     $RulesDir = Join-Path $TemplateDir "rules"
     if (Test-Path $RulesDir) {
@@ -163,6 +169,7 @@ XXXX
 ├── README.md                  # This file — project overview
 ├── MEMORY.md                  # Cross-session memory index
 ├── PINBOARD.md                # Task tracking board
+├── GLOSSARY.md                # Definitions, abbreviations, command-phrases
 ├── .claude/
 │   ├── rules/                 # Path-scoped rules (auto-loaded by context)
 │   │   ├── r-data-analysis.md # R coding conventions (Code/**, Data/**)
@@ -265,6 +272,7 @@ Write-Host "  - CLAUDE.md          Ground rules + session protocol"
 Write-Host "  - README.md          Project overview"
 Write-Host "  - MEMORY.md          Cross-session memory index"
 Write-Host "  - PINBOARD.md        Task tracking board"
+Write-Host "  - GLOSSARY.md        Glossary (terms + command-phrases)"
 Write-Host "  - .claude/rules/     Path-scoped rules (R, LaTeX, Output)"
 Write-Host "  - build_registry.R   Script dependency tracker (Code\_Claude Scripts\)"
 Write-Host "  - .claude/settings   Baseline permissions for R + Git"

@@ -23,6 +23,7 @@ This repo provides a complete scaffolding for empirical research projects optimi
     ├── CLAUDE.md                   # Session instructions (ground rules + protocol)
     ├── MEMORY.md                   # Cross-session memory index
     ├── PINBOARD.md                 # Task tracking board
+    ├── GLOSSARY.md                 # Definitions, abbreviations, command-phrases
     ├── gitignore_template          # .gitignore for R + LaTeX projects
     ├── settings_local.json         # Baseline Claude Code permissions (R + Git)
     ├── build_registry.R            # Script registry builder (R)
@@ -97,6 +98,7 @@ My-New-Paper/
 ├── README.md                  # Project overview for humans
 ├── MEMORY.md                  # Cross-session memory index
 ├── PINBOARD.md                # Task and idea tracking board
+├── GLOSSARY.md                # Terms, abbreviations, command-phrases
 ├── .gitignore                 # Keeps build artifacts and large files out of Git
 ├── .claude/
 │   ├── rules/                 # Path-scoped rules (auto-loaded by context)
@@ -142,6 +144,8 @@ My-New-Paper/
 **Numbered scripts for pipeline order.** Scripts in `Code/` are prefixed `01_`, `02_`, etc. to indicate execution order. This makes the dependency chain explicit.
 
 **`PINBOARD.md` for task tracking.** Quick notes, ideas, and to-do items that persist across sessions. Claude can read and update this via the `/pinboard` command.
+
+**`GLOSSARY.md` for project vocabulary.** Definitions (variable/dataset names), abbreviations, and command-phrases (e.g. "push" = commit and push the paper). `/spin-up` loads it at session start so command-phrases stay active; manage it via the `/glossary` command. The skill definition is global ([Claude-Code-Skills-for-Academics](https://github.com/aspi6246/Claude-Code-Skills-for-Academics)); only `GLOSSARY.md` is project-local.
 
 ## How the CLAUDE.md Works
 

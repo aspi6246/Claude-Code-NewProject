@@ -60,6 +60,7 @@ claude-tools\
     ├── CLAUDE.md
     ├── MEMORY.md
     ├── PINBOARD.md
+    ├── GLOSSARY.md
     ├── gitignore_template
     ├── settings_local.json
     ├── build_registry.R
@@ -108,6 +109,7 @@ with all folders, configuration files, and templates ready to go. You'll see out
   Copied .gitignore
   Copied MEMORY.md (memory index for cross-session context)
   Copied PINBOARD.md (task tracking board)
+  Copied GLOSSARY.md (per-project glossary; loaded at session start)
   Copied path-scoped rules (.claude\rules\)
   Copied script-registry skill (.claude\skills\)
   Copied build_registry.R (Code\_Claude Scripts\)
