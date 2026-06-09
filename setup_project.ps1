@@ -66,7 +66,6 @@ New-Item -ItemType Directory -Path "$ProjectPath\Data\Processed\_Archive" -Force
 # Output directories
 New-Item -ItemType Directory -Path "$ProjectPath\Output\Tables\_Archive" -Force | Out-Null
 New-Item -ItemType Directory -Path "$ProjectPath\Output\Figures\_Archive" -Force | Out-Null
-New-Item -ItemType Directory -Path "$ProjectPath\Output\Processed Data" -Force | Out-Null
 
 # Supporting directories
 New-Item -ItemType Directory -Path "$ProjectPath\Literature" -Force | Out-Null
@@ -189,9 +188,8 @@ XXXX
 ├── Output\
 │   ├── Tables\                # LaTeX tables, CSVs
 │   │   └── _Archive\
-│   ├── Figures\               # PDFs, PNGs
-│   │   └── _Archive\
-│   └── Processed Data\        # Intermediate data (script-to-script)
+│   └── Figures\               # PDFs, PNGs
+│       └── _Archive\
 ├── Literature\                # Reference papers and documentation
 ├── Paper\                     # LaTeX paper and .bib files
 └── Admin\                     # Notes, ideas, miscellaneous
@@ -247,7 +245,6 @@ $GitkeepDirs = @(
     "Data\Processed\_Archive",
     "Output\Tables\_Archive",
     "Output\Figures\_Archive",
-    "Output\Processed Data",
     "Literature",
     "Paper",
     "Admin"
